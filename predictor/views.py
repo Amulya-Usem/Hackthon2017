@@ -25,11 +25,7 @@ from . helpers import fetchTrainingData, fetchLabels
 
 def fetchData(request):
 	db = initiateDb()
-	year = int(request.GET.get('year', 0))
-	q = {}
-	if year:
-		q = {"year": year}
-	records = list(db.users.find(q,{'_id':0}))
+	records = list(db.users.find({"diseaseType":{"$exists":True}},{'_id':0}))
 	res = json.dumps({"data": records})
 	return HttpResponse(res)
 
@@ -38,9 +34,12 @@ def fetchEachYearData(request):
 	"""
 	Getting data according to a year
 	"""
-	year = request.GET.get('year')
+	year = int(request.GET.get('year',0))
 	db = initiateDb()
-	records = list(db.users.find({"year":int(year)},{'_id':0}))
+	q = {}
+	if year:
+		q = {"year":year}
+	records = list(db.users.find(q,{'_id':0}))
 	res = json.dumps({"data": records})
 	return HttpResponse(res)
 
