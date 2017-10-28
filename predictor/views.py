@@ -19,3 +19,14 @@ def fetchData(request):
 	records = list(db.users.find({},{'_id':0}))
 	res = json.dumps({"data": records})
 	return HttpResponse(res)
+
+
+def fetchEachYearData(request):
+	"""
+	Getting data according to a year
+	"""
+	year = request.GET.get('year')
+	db = initiateDb()
+	records = list(db.users.find({"year":int(year)},{'_id':0}))
+	res = json.dumps({"data": records})
+	return HttpResponse(res)
