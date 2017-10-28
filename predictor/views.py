@@ -79,3 +79,25 @@ def trainSystem(request):
 	dataset_classifier = tree.DecisionTreeClassifier()
 	dataset_classifier = dataset_classifier.fit(features, labels)
 	return HttpResponse({"ok"})
+
+
+def fetchLegend(request):
+	"""
+	Getting legend data according to a year
+	"""
+	year = int(request.GET.get('year',2016))
+	db = initiateDb()
+	records = list(db.users.aggregate([
+    {'$match':{"year":year}},
+    {"$group" : {'_id':"$diseaseType", 'count':{'$sum':1}}}
+	]))
+
+	for i in records:
+		disease_color = list(db.legendcolor.find({"map_id":i.get('_id')},{'map_value':1,'_id':0}))
+		if len(disease_color):
+			i.update(disease_color[0]['map_value'])
+	if len(records):
+		res = json.dumps(records)
+	else:
+		res = {}			
+	return HttpResponse(res)	
