@@ -25,7 +25,7 @@ SECRET_KEY = 'ep1&kmj(%vg3sm(ab2=pu_61e#!!ew$mo*-idcsq!^64aks^d='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['10.10.4.42']
 
 
 # Application definition
