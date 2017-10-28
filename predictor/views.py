@@ -11,12 +11,25 @@ from django.http import HttpResponse
 
 from . config import initiateDb
 
+import pandas
+
+import numpy
+
+from sklearn import tree
+
+from . helpers import fetchTrainingData, fetchLabels
+
+
 # Create your views here.
 
 
 def fetchData(request):
 	db = initiateDb()
-	records = list(db.users.find({},{'_id':0}))
+	year = int(request.GET.get('year', 0))
+	q = {}
+	if year:
+		q = {"year": year}
+	records = list(db.users.find(q,{'_id':0}))
 	res = json.dumps({"data": records})
 	return HttpResponse(res)
 
@@ -49,3 +62,21 @@ def fetchYearDelta(request):
 
 	res = json.dumps({"data": disease_delta_list})
 	return HttpResponse(res)
+
+def trainSystem(request): 
+	"Feeds previous year data to train system"
+
+	training_data_set = pandas.DataFrame()
+	properties = [
+		"ppmLevel",
+		"bacteriaTypeInAir",
+		"phLevel",
+		"bacteriaTypeInWater",
+		"foodFiberContent",
+		"diseaseType"
+	]
+	features = fetchTrainingData(properties)
+	labels = fetchLabels(properties)
+	dataset_classifier = tree.DecisionTreeClassifier()
+	dataset_classifier = dataset_classifier.fit(features, labels)
+	return HttpResponse({"ok"})
