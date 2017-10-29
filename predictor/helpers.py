@@ -40,7 +40,11 @@ def insertRecord(doc):
 	db = initiateDb()
 	db.PredictionOutput.insert(doc)
 
-def changeTrainingStatus():
+def changeTrainingStatus(id):
+	print "Change status callled"
+	print id
 	db = initiateDb()
-	db.TrainingStatus.update_one({'status': "pending"}, {"$set":{"status": "completed"}})
+	print list(db.TrainingStatus.find({"_id":ObjectId(id)}))
+	db.TrainingStatus.update({"_id": ObjectId(id)}, {"$set":{"status": "completed"}})
+	print "returning"
 	return 

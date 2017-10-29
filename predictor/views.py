@@ -74,8 +74,8 @@ def fetchYearDelta(request):
 	res = json.dumps({"data": disease_delta_list})
 	return HttpResponse(res)
 
-def makePredictions(dataset_classifier, year):
-	print "make oredictions called"
+def makePredictions(dataset_classifier, year, id):
+	print "make predictions called"
 	data = getSampleData(year)
 	for doc in data:
 		sample_set = [
@@ -88,9 +88,11 @@ def makePredictions(dataset_classifier, year):
 		output = dataset_classifier.predict([sample_set])
 		doc['diseaseType'] = output[0]
 		insertRecord(doc)
+	changeTrainingStatus(id)
+	print "Returning"
 	return
 
-def beginTraining(year): 
+def beginTraining(year, id): 
 	"Feeds previous year data to train system"
 	print "called"
 
@@ -107,16 +109,15 @@ def beginTraining(year):
 	labels = fetchLabels(properties)
 	dataset_classifier = tree.DecisionTreeClassifier()
 	dataset_classifier = dataset_classifier.fit(features, labels)
-	makePredictions(dataset_classifier, year)
-	changeTrainingStatus()
+	makePredictions(dataset_classifier, year, id)
 	return 
 
 def trainSystem(request):
 	year = int(request.GET.get('year',2016))
-	t = threading.Thread(target=beginTraining(year), args=())
+	id = createProcessId()
+	t = threading.Thread(target=beginTraining(year, id), args=())
 	t.setDaemon(True)
 	t.start()
-	id = createProcessId()
 	return HttpResponse(json.dumps({"processId": str(id)}))
 
 
@@ -143,8 +144,8 @@ def fetchLegend(request):
 
 def getTrainingStatus(request):
 	db = initiateDb()
-	obj_id = request.GET.get('obj_id')
-	record = list(db.TrainingStatus.find({"_id": ObjectId(str(obj_id))}, {'_id': 0}))
+	objId = request.GET.get('objId')
+	record = list(db.TrainingStatus.find({"_id": ObjectId(str(objId))}, {'_id': 0}))
 	return HttpResponse(json.dumps(record[0]))
 
 def getPredictionResult(request):
