@@ -25,4 +25,22 @@ def createProcessId():
 		"status": "pending"
 	}
 	return db.TrainingStatus.insert(process_obj)
-	
+
+def getSampleData(year):
+	db = initiateDb()
+	q = {
+		"diseaseType": {"$exists": True}
+	}
+	if year:
+		q['year'] = int(year)
+	records = list(db.users.find(q, {'_id': 0}))
+	return records
+
+def insertRecord(doc):
+	db = initiateDb()
+	db.PredictionOutput.insert(doc)
+
+def changeTrainingStatus():
+	db = initiateDb()
+	db.TrainingStatus.update_one({'status': "pending"}, {"$set":{"status": "completed"}})
+	return 

@@ -19,7 +19,7 @@ import threading
 
 from sklearn import tree
 
-from . helpers import fetchTrainingData, fetchLabels, createProcessId
+from . helpers import fetchTrainingData, fetchLabels, createProcessId, getSampleData, insertRecord, changeTrainingStatus
 
 
 # Create your views here.
@@ -71,8 +71,25 @@ def fetchYearDelta(request):
 	res = json.dumps({"data": disease_delta_list})
 	return HttpResponse(res)
 
-def beginTraining(): 
+def makePredictions(dataset_classifier, year):
+	print "make oredictions called"
+	data = getSampleData(year)
+	for doc in data:
+		sample_set = [
+			doc.get('ppmLevel'),
+			doc.get('bacteriaTypeInAir'),
+			doc.get('phLevel'),
+			doc.get('bacteriaTypeInWater'),
+			doc.get('foodFiberContent'),
+		]
+		output = dataset_classifier.predict([sample_set])
+		doc['diseaseType'] = output[0]
+		insertRecord(doc)
+	return
+
+def beginTraining(year): 
 	"Feeds previous year data to train system"
+	print "called"
 
 	training_data_set = pandas.DataFrame()
 	properties = [
@@ -87,10 +104,13 @@ def beginTraining():
 	labels = fetchLabels(properties)
 	dataset_classifier = tree.DecisionTreeClassifier()
 	dataset_classifier = dataset_classifier.fit(features, labels)
+	makePredictions(dataset_classifier, year)
+	changeTrainingStatus()
 	return 
 
 def trainSystem(request):
-	t = threading.Thread(target=beginTraining, args=())
+	year = int(request.GET.get('year',2016))
+	t = threading.Thread(target=beginTraining(year), args=())
 	t.setDaemon(True)
 	t.start()
 	id = createProcessId()
