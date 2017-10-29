@@ -15,9 +15,11 @@ import pandas
 
 import numpy
 
+import threading
+
 from sklearn import tree
 
-from . helpers import fetchTrainingData, fetchLabels
+from . helpers import fetchTrainingData, fetchLabels, createProcessId
 
 
 # Create your views here.
@@ -25,7 +27,14 @@ from . helpers import fetchTrainingData, fetchLabels
 
 def fetchData(request):
 	db = initiateDb()
-	records = list(db.users.find({"diseaseType":{"$exists":True}},{'_id':0}))
+	year = int(request.GET.get('year',0))
+	q = {}
+	if year:
+		q = {
+			"year":year,
+			"diseaseType": {"$exists": True}
+		}
+	records = list(db.users.find(q,{'_id':0}))
 	res = json.dumps({"data": records})
 	return HttpResponse(res)
 
@@ -62,7 +71,7 @@ def fetchYearDelta(request):
 	res = json.dumps({"data": disease_delta_list})
 	return HttpResponse(res)
 
-def trainSystem(request): 
+def beginTraining(): 
 	"Feeds previous year data to train system"
 
 	training_data_set = pandas.DataFrame()
@@ -78,7 +87,14 @@ def trainSystem(request):
 	labels = fetchLabels(properties)
 	dataset_classifier = tree.DecisionTreeClassifier()
 	dataset_classifier = dataset_classifier.fit(features, labels)
-	return HttpResponse({"ok"})
+	return 
+
+def trainSystem(request):
+	t = threading.Thread(target=beginTraining, args=())
+	t.setDaemon(True)
+	t.start()
+	id = createProcessId()
+	return HttpResponse(json.dumps({"processId": str(id)}))
 
 
 def fetchLegend(request):

@@ -1,4 +1,5 @@
 from . config import initiateDb
+from bson.objectid import ObjectId
 
 
 def fetchTrainingData(training_properties):
@@ -17,3 +18,11 @@ def fetchLabels(training_properties):
 	for doc in historical_data:
 		labels.append(doc.get('diseaseType'))
 	return labels		
+
+def createProcessId():
+	db = initiateDb()
+	process_obj = {
+		"status": "pending"
+	}
+	return db.TrainingStatus.insert(process_obj)
+	
