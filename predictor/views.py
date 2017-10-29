@@ -146,3 +146,16 @@ def getTrainingStatus(request):
 	obj_id = request.GET.get('obj_id')
 	record = list(db.TrainingStatus.find({"_id": ObjectId(str(obj_id))}, {'_id': 0}))
 	return HttpResponse(json.dumps(record[0]))
+
+def getPredictionResult(request):
+	db = initiateDb()
+	year = int(request.GET.get('year',0))
+	q = {}
+	if year:
+		q = {
+			"year":year,
+			"diseaseType": {"$exists": True}
+		}
+	records = list(db.PredictionOutput.find(q,{'_id':0}))
+	res = json.dumps({"data": records})
+	return HttpResponse(res)

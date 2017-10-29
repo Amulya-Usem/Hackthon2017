@@ -7,5 +7,6 @@ urlpatterns = [
     url(r'^getYearDelta', views.fetchYearDelta, name='getYearDelta'),
     url(r'^trainSystem', views.trainSystem, name='trainSystem'),
     url(r'^getLegend', views.fetchLegend, name='getLegend'),
-    url(r'^getStatus', views.getTrainingStatus, name='getTrainingStatus')
+    url(r'^getStatus', views.getTrainingStatus, name='getTrainingStatus'),
+    url(r'^getPredictionResults', views.getPredictionResult, name='getPredictionResults')
 ]
