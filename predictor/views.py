@@ -19,6 +19,9 @@ import threading
 
 from sklearn import tree
 
+from bson.objectid import ObjectId
+
+
 from . helpers import fetchTrainingData, fetchLabels, createProcessId, getSampleData, insertRecord, changeTrainingStatus
 
 
@@ -137,3 +140,9 @@ def fetchLegend(request):
 	else:
 		res = {}			
 	return HttpResponse(res)	
+
+def getTrainingStatus(request):
+	db = initiateDb()
+	obj_id = request.GET.get('obj_id')
+	record = list(db.TrainingStatus.find({"_id": ObjectId(str(obj_id))}, {'_id': 0}))
+	return HttpResponse(json.dumps(record[0]))
